@@ -1,0 +1,4 @@
+Hello from the NIO Async File Server!
+This is an example file used to demonstrate asynchronous file transfer.
+Feel free to modify this content and test the file transfer functionality.
+Happy coding with NIO!
