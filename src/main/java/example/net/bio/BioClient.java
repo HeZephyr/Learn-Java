@@ -1,4 +1,4 @@
-package example.bio;
+package example.net.bio;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -10,9 +10,10 @@ Learn-Java
 │   └── main
 │       └── java
 │           └── example
-│               ├── bio
-│               │   ├── BioServer.java  # 服务器端代码
-│               │   └── BioClient.java  # 客户端代码
+│               └── net
+│                   └── bio
+│                       ├── BioServer.java  # BIO 示例服务器端代码
+│                       └── BioClient.java  # BIO 示例客户端代码
 └── pom.xml
 ```
 
@@ -20,12 +21,12 @@ Learn-Java
 
 1. 启动 `BioServer` 服务器：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.bio.BioServer"
+   mvn exec:java -Dexec.mainClass="example.net.bio.BioServer"
    ```
 
 2. 启动 `BioClient` 客户端：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.bio.BioClient"
+   mvn exec:java -Dexec.mainClass="example.net.bio.BioClient"
    ```
 
 ## BIO 原理

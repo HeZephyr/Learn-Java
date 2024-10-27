@@ -12,10 +12,11 @@ Learn-Java
 │   └── main
 │       └── java
 │           └── example
-│               └── nio
-│                   └── demo1
-│                       ├── NioServer.java  # 服务器端代码
-│                       └── NioClient.java  # 客户端代码
+│               └── net
+│                   └── nio
+│                       └── demo1
+│                           ├── NioServer.java  # NIO Demo 1 服务器端代码
+│                           └── NioClient.java  # NIO Demo 1 客户端代码
 └── pom.xml
 ```
 
@@ -23,12 +24,12 @@ Learn-Java
 
 1. 启动 `NioServer` 服务器：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo1.NioServer"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo1.NioServer"
    ```
 
 2. 启动 `NioClient` 客户端：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo1.NioClient"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo1.NioClient"
    ```
 
 ### NIO Demo 1 原理
@@ -62,10 +63,11 @@ Learn-Java
 │   └── main
 │       └── java
 │           └── example
-│               └── nio
-│                   └── demo2
-│                       ├── NioServer.java  # 服务器端代码
-│                       └── NioClient.java  # 客户端代码
+│               └── net
+│                   └── nio
+│                       └── demo2
+│                           ├── NioServer.java  # NIO Demo 2 服务器端代码
+│                           └── NioClient.java  # NIO Demo 2 客户端代码
 └── pom.xml
 ```
 
@@ -73,12 +75,12 @@ Learn-Java
 
 1. 启动 `NioServer` 服务器：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo2.NioServer"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo2.NioServer"
    ```
 
 2. 启动多个 `NioClient` 客户端，模拟多个连接：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo2.NioClient"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo2.NioClient"
    ```
 
 ### NIO Demo 2 原理
@@ -138,10 +140,11 @@ Learn-Java
 │   └── main
 │       └── java
 │           └── example
-│               └── nio
-│                   └── demo3
-│                       ├── AsyncFileServer.java  # 异步文件传输服务器
-│                       └── FileClient.java       # 异步文件接收客户端
+│               └── net
+│                   └── nio
+│                       └── demo3
+│                           ├── AsyncFileServer.java  # 异步文件传输服务器端代码
+│                           └── FileClient.java       # 异步文件接收客户端代码
 └── pom.xml
 ```
 
@@ -149,12 +152,12 @@ Learn-Java
 
 1. 启动 `AsyncFileServer` 服务器：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo3.AsyncFileServer"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo3.AsyncFileServer"
    ```
 
 2. 启动 `FileClient` 客户端，模拟文件请求和下载：
    ```bash
-   mvn exec:java -Dexec.mainClass="example.nio.demo3.FileClient"
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo3.FileClient"
    ```
 
 ### Demo 3 原理
