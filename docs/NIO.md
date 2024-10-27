@@ -41,13 +41,13 @@ NIO (Non-blocking I/O) 模型在非阻塞模式下允许服务器端和客户端
 2. **客户端连接**：客户端使用 `SocketChannel` 连接服务器，设置为非阻塞模式。
 3. **数据传输**：服务器发送一条消息给客户端，客户端读取后输出。
 
-#### 缺点
+### 缺点
 
 - 由于没有引入 `Selector`，每次仅能处理一个连接，未能体现 NIO 的多路复用能力。
 - 适合小规模连接或测试非阻塞的基本概念，但不适用于高并发场景。
 
 ---
-
+### Demo1 总结
 通过 Demo 1，我们实现了基本的非阻塞服务器和客户端通信，为进一步学习 NIO 的多路复用机制（将在 Demo 2 中介绍）打下基础。
 
 ## NIO 示例项目 - Demo 2
@@ -121,3 +121,119 @@ Learn-Java
 ---
 
 通过 Demo 2，我们使用 `Selector` 实现了非阻塞、多路复用的服务器端，能够有效处理多个客户端连接，为深入理解 NIO 在高并发场景下的优势奠定了基础。
+
+以下是 `NIO.md` 文件中关于 Demo 3 的文档说明，详细解释了回调机制和 NIO 的特性。
+
+---
+
+## NIO 示例项目 - Demo 3
+
+该示例展示了如何使用 Java NIO 实现异步文件传输服务。服务器通过 `AsynchronousFileChannel` 从文件中读取数据块，并将每块数据发送给客户端，客户端则异步接收数据并保存到本地文件中。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── nio
+│                   └── demo3
+│                       ├── AsyncFileServer.java  # 异步文件传输服务器
+│                       └── FileClient.java       # 异步文件接收客户端
+└── pom.xml
+```
+
+### 运行说明
+
+1. 启动 `AsyncFileServer` 服务器：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.nio.demo3.AsyncFileServer"
+   ```
+
+2. 启动 `FileClient` 客户端，模拟文件请求和下载：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.nio.demo3.FileClient"
+   ```
+
+### Demo 3 原理
+
+Demo 3 使用了 Java NIO 的异步 I/O 特性，包括 `AsynchronousSocketChannel` 和 `AsynchronousFileChannel`，实现非阻塞的文件传输。异步回调 (`CompletionHandler`) 是实现异步传输的核心，使文件数据可以分块读取并依次传输给客户端。
+
+### Demo 3 的完整流程
+
+```
+Client                     Server
+  |                           |
+  | Connect to Server         |  -- Asynchronous connection --
+  |-------------------------->|
+  |                           |
+  | Send filename request     |
+  |-------------------------->|
+  |                           |
+  |        Receive filename   |  -- Asynchronous read --
+  |                           |
+  |                           | Open file asynchronously
+  |                           |   using AsynchronousFileChannel
+  |                           |
+  |                           |
+  |        Read file chunk    |  -- Asynchronous read --
+  |                           |
+  | Send file chunk           |
+  |<--------------------------|
+  | Write chunk to file       |
+  |                           |
+  |        (repeat)           |  -- Loop until EOF --
+  |                           |
+  |        Last file chunk    |
+  |<--------------------------|
+  | Write final chunk         |
+  |                           |
+  |                           | Close file & channel
+  |                           |   after transfer completion
+  |                           |
+  | Disconnect & Close        |
+  |                           |
+```
+
+1. **服务器启动和连接接受**：服务器使用 `AsynchronousServerSocketChannel` 异步监听端口 8080 等待客户端连接请求。通过调用 `accept()` 获取一个 `Future` 对象，服务器可以执行其他操作，而无需阻塞等待连接。
+2. **读取客户端文件请求**：服务器与客户端连接后，服务器通过 `CompletionHandler` 异步读取客户端发送的文件名请求。
+3. **异步读取文件内容并发送**：服务器收到文件名后，使用 `AsynchronousFileChannel` 异步读取文件内容，以分块的形式将数据发送到客户端。
+4. **客户端异步接收数据**：客户端接收数据的每个块，并将其写入本地文件中，直到文件传输完成。
+5. **资源释放与连接关闭**：文件传输完成后，服务器与客户端都会关闭相关资源和连接。服务器通过关闭 `AsynchronousFileChannel` 释放文件资源，同时关闭 `AsynchronousSocketChannel` 以断开与客户端的连接。客户端在确认接收完成后也关闭自身的通道和关联的 `AsynchronousChannelGroup`，确保所有后台线程正确终止，避免资源泄漏。
+
+### 回调和异步机制详解
+
+Demo 3 中的异步文件传输实现依赖于 **回调嵌套**，即读取文件的回调完成后，嵌套调用写入客户端的回调，以顺序完成传输流程。
+
+#### `CompletionHandler` 及嵌套回调机制
+
+1. **文件读取回调 (`fileChannel.read(...)`)**：
+    - 每次从文件中读取数据时，触发 `CompletionHandler` 的 `completed` 方法。
+    - 读取完成后，切换缓冲区为“读模式”（`flip()`），然后将数据写入客户端。
+    - 当文件读取到结尾 (`bytesRead == -1`) 时，关闭文件通道和客户端通道，结束传输。
+
+2. **数据写入回调 (`clientChannel.write(...)`)**：
+    - 将数据块写入客户端时，触发嵌套的 `CompletionHandler` 的 `completed` 方法。
+    - 写入完成后，清空缓冲区以准备下一次读取，并更新文件读取位置。
+    - 再次调用 `readFileChunk` 读取下一个数据块，进入下一个回调循环，直到文件全部发送完成。
+
+#### 回调嵌套的实现
+
+这种嵌套回调模式使得每一个操作（读取或写入）完成后才能继续下一个操作，确保了传输顺序的正确性。同时，所有操作均为非阻塞，能够在等待完成时执行其他任务。
+
+#### 回调中的异常处理
+
+在每个 `CompletionHandler` 中，`failed` 方法用于处理读写失败的情况，如文件读取失败或网络写入失败。失败后，通道会被关闭以确保资源的正确释放。
+
+### 使用的 NIO 特性
+
+- **`AsynchronousFileChannel`**：用于从服务器端文件中异步读取数据，使读取操作不会阻塞主线程。
+- **`AsynchronousSocketChannel`**：用于客户端和服务器的非阻塞数据传输，允许多个客户端同时连接服务器。
+- **`CompletionHandler`**：Java NIO 的回调接口，用于异步操作完成或失败时触发相应的逻辑。Demo 3 中通过嵌套的 `CompletionHandler` 实现了顺序的非阻塞传输。
+- **非阻塞 I/O (NIO)**：允许服务器和客户端以异步方式发送和接收数据块，提高资源利用率。
+
+### Demo 3 总结
+
+通过 Demo 3，我们展示了如何使用 Java NIO 的异步 I/O 和回调机制实现高效的文件传输。服务器使用 `AsynchronousFileChannel` 读取文件并通过 `AsynchronousSocketChannel` 将数据发送给客户端，客户端则异步接收文件并存储。整个过程无阻塞，实现了高效的数据传输。
