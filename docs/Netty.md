@@ -144,3 +144,108 @@ Learn-Java
 ### Basic 总结
 
 该 `basic` 项目展示了一个最简化的 Netty 服务器和客户端通信模型，包括配置 `EventLoopGroup`、通道类型、编码解码器和处理器。它提供了一个清晰的流程，用于理解 Netty 的核心配置和通信机制，为进一步开发复杂的网络应用奠定基础。
+
+## Echo Server 项目
+
+`Echo Server` 项目展示了一个简单的回显服务器和客户端的实现。当客户端发送消息时，服务器会将收到的消息原样返回给客户端。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── net
+│                   └── netty
+│                       └── echo
+│                           ├── EchoServer.java         # Echo服务器端代码
+│                           ├── EchoServerHandler.java  # 服务器消息回显处理器
+│                           ├── EchoClient.java         # Echo客户端代码
+│                           └── EchoClientHandler.java  # 客户端消息处理器
+└── pom.xml
+```
+
+### 项目介绍
+
+该项目展示了一个基础的 Netty 回显服务器，客户端发送的每条消息都会被服务器回显。Echo Server 使用了 `ChannelHandler` 来实现简单的请求响应机制。
+
+### EchoServer
+
+`EchoServer` 使用 `ServerBootstrap` 来配置和启动服务器。
+
+1. **配置线程组**：
+    - `bossGroup`：处理客户端的连接请求。
+    - `workerGroup`：处理已连接客户端的 I/O 事件。
+
+   ```java
+   EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+   EventLoopGroup workerGroup = new NioEventLoopGroup();
+   ```
+
+2. **指定通道类型**：使用 `NioServerSocketChannel` 处理非阻塞 TCP 连接。
+
+3. **配置处理器链**：添加 `StringDecoder` 和 `StringEncoder` 编解码器以处理字符串数据，并添加 `EchoServerHandler` 来回显消息。
+
+4. **启动服务器**：通过 `bind` 绑定端口并启动服务器。
+
+#### 服务器工作流程
+
+1. **连接建立**：`ServerBootstrap` 监听端口，客户端连接成功后，触发 `channelActive` 事件。
+2. **消息处理**：客户端发送消息时，`EchoServerHandler` 的 `channelRead` 方法被调用，并将消息写回客户端。
+3. **断开连接**：当客户端断开连接时，服务器清理资源。
+
+### EchoServerHandler
+
+`EchoServerHandler` 是服务器的核心处理器，负责接收和回显消息。
+
+- **channelRead**：当接收到客户端消息时，直接将消息写回到客户端的通道。
+- **exceptionCaught**：在处理过程中出现异常时，关闭通道以释放资源。
+
+### EchoClient
+
+`EchoClient` 使用 `Bootstrap` 来配置和连接服务器。
+
+1. **配置线程组**：使用单独的 `NioEventLoopGroup` 处理客户端 I/O 操作。
+2. **指定通道类型**：使用 `NioSocketChannel` 作为客户端的非阻塞通道。
+3. **配置处理器链**：添加 `StringEncoder`、`StringDecoder` 和 `EchoClientHandler`。
+4. **连接服务器**：通过 `connect` 方法连接到服务器。
+
+#### 客户端工作流程
+
+1. **连接服务器**：连接服务器后，`EchoClientHandler` 的 `channelActive` 事件触发，开始接受用户输入。
+2. **发送消息**：用户输入消息并发送到服务器。
+3. **接收回显**：服务器回显消息时，`EchoClientHandler` 的 `channelRead` 被调用。
+
+### EchoClientHandler
+
+`EchoClientHandler` 负责读取用户输入并发送消息到服务器，以及处理来自服务器的回显消息。
+
+- **channelActive**：在通道激活时，启动一个新的线程等待用户输入，以避免阻塞 Netty 的 I/O 线程。
+- **channelRead**：当接收到服务器的回显消息时，输出到控制台。
+- **exceptionCaught**：在出现异常时关闭通道。
+
+### 注意事项
+
+- `channelActive` 方法中使用新线程等待用户输入，以避免阻塞主线程。若不使用新线程，客户端会在用户输入阻塞，无法响应服务器的回显消息。
+
+### 运行说明
+
+1. 启动 `EchoServer` 服务器：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.netty.echo.EchoServer"
+   ```
+
+2. 启动 `EchoClient` 客户端并发送消息：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.netty.echo.EchoClient"
+   ```
+
+输入消息后，服务器会回显相同的消息。输入 `quit` 可断开客户端连接。
+
+---
+
+### Echo Server 项目总结
+
+Echo Server 项目展示了 Netty 的回显通信模型，包括客户端到服务器的请求、服务器的回显和响应。它演示了如何配置 `EventLoopGroup`、`ChannelPipeline` 和 `ChannelHandler`，并通过多线程支持同时处理输入和接收服务器消息。
