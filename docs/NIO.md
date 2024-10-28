@@ -240,3 +240,62 @@ Demo 3 中的异步文件传输实现依赖于 **回调嵌套**，即读取文�
 ### Demo 3 总结
 
 通过 Demo 3，我们展示了如何使用 Java NIO 的异步 I/O 和回调机制实现高效的文件传输。服务器使用 `AsynchronousFileChannel` 读取文件并通过 `AsynchronousSocketChannel` 将数据发送给客户端，客户端则异步接收文件并存储。整个过程无阻塞，实现了高效的数据传输。
+
+以下是包含 Demo 4 和 Demo 5 说明以及分开总结的 `NIO.md` 文档：
+
+---
+
+# NIO
+
+## NIO 示例项目 - Demo 4
+
+该项目展示了如何使用 `ByteBuffer` 实现对象的序列化和反序列化，将数据存储为字节数组格式。通过序列化 `Person` 对象，将其数据转换为字节，以便于高效的网络传输或持久化。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── net
+│                   └── nio
+│                       └── demo4
+│                           ├── Person.java         # 带 Lombok 注解的对象类
+│                           └── Serializer.java     # 序列化和反序列化工具类
+└── src
+    └── test
+        └── java
+            └── example
+                └── net
+                    └── nio
+                        └── demo4
+                            └── SerializerTest.java # 测试文件
+```
+
+### 运行说明
+
+Demo 4 提供了 `SerializerTest` 单元测试，用于验证 `Serializer` 类的序列化和反序列化功能。可通过以下命令执行测试：
+
+```bash
+mvn test -Dtest=example.net.nio.demo4.SerializerTest
+```
+
+### Demo 4 原理
+
+- **序列化**：`Serializer.serialize` 将 `Person` 对象的 ID 和姓名转换为字节，分别存储在 `ByteBuffer` 中。
+- **反序列化**：`Serializer.deserialize` 从字节数组中还原 `Person` 对象，通过读取 `ByteBuffer` 中的 ID 和姓名字段。
+
+#### Demo 4 流程
+
+1. **对象转字节**：将对象属性转换为字节，将数据打包到 `ByteBuffer` 中。
+2. **传输或存储**：序列化数据可用于网络传输或存储。
+3. **还原对象**：通过读取字节数组，还原为 `Person` 对象。
+
+### Demo 4 总结
+
+通过 Demo 4，我们实现了 `Person` 对象的序列化和反序列化，利用 `ByteBuffer` 直接操作字节，提高了网络传输或持久化的效率。该示例为实现自定义数据格式的序列化和反序列化提供了模板，便于在网络通信中高效传输数据。
+
+---
+
