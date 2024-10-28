@@ -240,3 +240,109 @@ Demo 3 中的异步文件传输实现依赖于 **回调嵌套**，即读取文�
 ### Demo 3 总结
 
 通过 Demo 3，我们展示了如何使用 Java NIO 的异步 I/O 和回调机制实现高效的文件传输。服务器使用 `AsynchronousFileChannel` 读取文件并通过 `AsynchronousSocketChannel` 将数据发送给客户端，客户端则异步接收文件并存储。整个过程无阻塞，实现了高效的数据传输。
+
+以下是包含 Demo 4 和 Demo 5 说明以及分开总结的 `NIO.md` 文档：
+
+---
+
+# NIO
+
+## NIO 示例项目 - Demo 4
+
+该项目展示了如何使用 `ByteBuffer` 实现对象的序列化和反序列化，将数据存储为字节数组格式。通过序列化 `Person` 对象，将其数据转换为字节，以便于高效的网络传输或持久化。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── net
+│                   └── nio
+│                       └── demo4
+│                           ├── Person.java         # 带 Lombok 注解的对象类
+│                           └── Serializer.java     # 序列化和反序列化工具类
+└── src
+    └── test
+        └── java
+            └── example
+                └── net
+                    └── nio
+                        └── demo4
+                            └── SerializerTest.java # 测试文件
+```
+
+### 运行说明
+
+Demo 4 提供了 `SerializerTest` 单元测试，用于验证 `Serializer` 类的序列化和反序列化功能。可通过以下命令执行测试：
+
+```bash
+mvn test -Dtest=example.net.nio.demo4.SerializerTest
+```
+
+### Demo 4 原理
+
+- **序列化**：`Serializer.serialize` 将 `Person` 对象的 ID 和姓名转换为字节，分别存储在 `ByteBuffer` 中。
+- **反序列化**：`Serializer.deserialize` 从字节数组中还原 `Person` 对象，通过读取 `ByteBuffer` 中的 ID 和姓名字段。
+
+#### Demo 4 流程
+
+1. **对象转字节**：将对象属性转换为字节，将数据打包到 `ByteBuffer` 中。
+2. **传输或存储**：序列化数据可用于网络传输或存储。
+3. **还原对象**：通过读取字节数组，还原为 `Person` 对象。
+
+### Demo 4 总结
+
+通过 Demo 4，我们实现了 `Person` 对象的序列化和反序列化，利用 `ByteBuffer` 直接操作字节，提高了网络传输或持久化的效率。该示例为实现自定义数据格式的序列化和反序列化提供了模板，便于在网络通信中高效传输数据。
+
+---
+
+## NIO 示例项目 - Demo 5
+
+该项目展示了 Java NIO 中的 **零拷贝** 文件传输技术，通过 `FileChannel.transferTo` 实现高效的文件传输。客户端发送文件请求，服务器端利用零拷贝技术将文件数据直接传输给客户端，避免多次内存拷贝操作。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── net
+│                   └── nio
+│                       └── demo5
+│                           ├── ZeroCopyServer.java  # 使用零拷贝的服务器端代码
+│                           └── ZeroCopyClient.java  # 文件请求和接收的客户端代码
+└── pom.xml
+```
+
+### 运行说明
+
+1. 确保 `server_files` 文件夹存在 `example.txt` 文件，启动 `ZeroCopyServer`：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo5.ZeroCopyServer"
+   ```
+
+2. 启动 `ZeroCopyClient` 客户端，客户端会向服务器请求文件，并将其保存到 `client_files` 文件夹中。
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.nio.demo5.ZeroCopyClient"
+   ```
+
+### Demo 5 原理
+
+Demo 5 使用 Java NIO 的 **零拷贝** 技术实现了高效的文件传输，`FileChannel.transferTo` 方法将文件内容直接传输到 `SocketChannel`，大大减少了 CPU 和内存开销。
+
+#### Demo 5 流程
+
+1. **客户端请求文件**：客户端建立连接并发送文件名给服务器。
+2. **服务器响应并传输文件**：服务器接收到请求后，使用 `transferTo` 直接将文件数据写入到客户端的 `SocketChannel` 中。
+3. **客户端接收并保存文件**：客户端读取并存储接收到的文件数据，直到完成整个文件的接收。
+
+### Demo 5 总结
+
+通过 Demo 5，我们展示了 Java NIO 的零拷贝传输技术，通过 `FileChannel.transferTo` 直接传输文件数据，减少了 CPU 和内存的负载。该示例展示了零拷贝在大文件传输中的高效性，适用于需要频繁传输文件的场景。
+
+--- 
