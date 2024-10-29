@@ -249,3 +249,69 @@ Learn-Java
 ### Echo Server 项目总结
 
 Echo Server 项目展示了 Netty 的回显通信模型，包括客户端到服务器的请求、服务器的回显和响应。它演示了如何配置 `EventLoopGroup`、`ChannelPipeline` 和 `ChannelHandler`，并通过多线程支持同时处理输入和接收服务器消息。
+
+## Heartbeat 项目
+
+`Heartbeat` 项目展示了 Netty 中的心跳机制，确保客户端和服务器间的连接有效。该机制通过客户端定期发送心跳消息，服务器根据空闲检测机制关闭长时间无活动的连接，避免资源浪费。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   └── main
+│       └── java
+│           └── example
+│               └── net
+│                   └── netty
+│                       └── heartbeat
+│                           ├── HeartbeatServer.java         # 服务器端代码
+│                           ├── HeartbeatServerHandler.java  # 服务器处理器
+│                           ├── HeartbeatClient.java         # 客户端代码
+│                           └── HeartbeatClientHandler.java  # 客户端处理器
+└── pom.xml
+```
+
+### Heartbeat 项目流程
+
+```plaintext
+Client                             Server
+  |                                   |
+  | ---- Connect to Server ---------->|
+  |                                   |
+  | <-- Connection Established -------|
+  |                                   |
+  | --- Periodic "HEARTBEAT" -------> |
+  |                                   |
+  | <-- "Server response: HEARTBEAT" -|
+  |                                   |
+  | (Repeat heartbeat every 4 secs)   |
+  |                                   |
+  | If no heartbeat after 5 secs      |
+  | --> Close connection               |
+  |                                   |
+  |<-- Connection closed by server   |
+```
+
+### 注意事项
+
+- **`IdleStateHandler` 配置**：客户端 `IdleStateHandler` 设置为 4 秒写空闲，服务器为 5 秒读空闲。超过指定时间没有活动的连接将被关闭。
+- **适用场景**：在长连接需求的应用场景（如即时通讯、游戏）中，心跳机制能有效检测连接状态，确保资源合理分配。
+
+### 运行说明
+
+1. 启动服务器：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.netty.heartbeat.HeartbeatServer"
+   ```
+
+2. 启动客户端并观察心跳通信：
+   ```bash
+   mvn exec:java -Dexec.mainClass="example.net.netty.heartbeat.HeartbeatClient"
+   ```
+
+---
+
+### Heartbeat 项目总结
+
+Heartbeat 项目展示了 Netty 中使用 `IdleStateHandler` 和定期心跳消息进行连接检测的方式，是长连接应用中的有效资源管理方法。
