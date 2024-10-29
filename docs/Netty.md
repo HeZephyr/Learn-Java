@@ -315,3 +315,133 @@ Client                             Server
 ### Heartbeat 项目总结
 
 Heartbeat 项目展示了 Netty 中使用 `IdleStateHandler` 和定期心跳消息进行连接检测的方式，是长连接应用中的有效资源管理方法。
+
+以下是整合后的 `WebSocket Chat Server` 项目文档，包括原理、工作流程图以及 `chat_client.html` 的功能描述。
+
+---
+
+## WebSocket Chat Server 项目
+
+`WebSocket Chat Server` 项目展示了一个基于 Netty 实现的实时 WebSocket 聊天系统。服务器负责接收和广播来自各客户端的消息，使得多个客户端可以实时地进行聊天。
+
+### 项目结构
+
+```
+Learn-Java
+├── src
+│   ├── main
+│   │   └── java
+│   │       └── example
+│   │           └── net
+│   │               └── netty
+│   │                   └── websocket
+│   │                       ├── WebSocketChatServer.java         # WebSocket 聊天服务器
+│   │                       ├── WebSocketChatServerHandler.java  # 服务器消息处理器
+│   │                       └── WebSocketChatServerInitializer.java  # WebSocket 初始化器
+│   └── main
+│       └── resources
+│           └── chat_client.html  # WebSocket 聊天客户端界面
+└── pom.xml
+```
+
+### 项目原理
+
+在 WebSocket 聊天系统中，服务器与客户端通过 WebSocket 协议保持持续连接，使得消息可以在客户端之间实时广播。`WebSocketChatServer` 项目基于 Netty 的非阻塞异步机制，实现了高效的实时消息传输：
+
+1. **连接管理**：服务器通过 Netty 的 `ChannelGroup` 统一管理所有客户端连接，支持对已连接的每个客户端进行消息广播。
+2. **消息处理**：服务器通过 `WebSocketChatServerHandler` 处理每个连接的消息。在客户端发送消息时，服务器将其广播给所有连接的客户端。
+3. **WebSocket 协议支持**：使用 Netty 的 `WebSocketServerProtocolHandler`，实现 HTTP 到 WebSocket 的协议升级。
+
+### 服务器工作流程
+
+下图描述了 WebSocket Chat Server 的工作流程：
+
+```plaintext
+Client                    Server                         ChannelGroup
+  |                         |                                  |
+  |---- WebSocket Handshake ---->                            |
+  |                         |                                  |
+  |                    Add Channel                           |
+  |                         |                                  |
+  |<---- Message Broadcast ----| <----- Message ---->       |
+  |                         |                                  |
+  |                     Remove Channel                        |
+  |                         |                                  |
+```
+
+1. **WebSocket 握手**：客户端连接到服务器，服务器完成 WebSocket 协议的握手，建立持续的连接。
+2. **消息广播**：当某个客户端发送消息时，服务器将该消息发送给所有已连接的客户端。
+3. **连接管理**：当客户端连接或断开连接时，服务器会更新 `ChannelGroup`，确保只广播给当前已连接的客户端。
+
+### 主要类及其功能
+
+#### WebSocketChatServer
+
+`WebSocketChatServer` 配置并启动服务器：
+
+1. **配置线程组**：
+    - `bossGroup`：处理连接请求。
+    - `workerGroup`：处理数据读写。
+2. **通道类型**：`NioServerSocketChannel` 用于非阻塞 TCP 连接。
+3. **处理器链**：添加 `WebSocketChatServerInitializer`，设置协议处理和自定义消息处理器。
+
+#### WebSocketChatServerInitializer
+
+`WebSocketChatServerInitializer` 配置了 WebSocket 的核心处理器：
+
+- **HttpServerCodec**：HTTP 编解码器，将 HTTP 请求和响应转换为 Netty 可识别的消息格式。
+- **HttpObjectAggregator**：将 HTTP 请求聚合成完整的消息。
+- **WebSocketServerProtocolHandler**：处理 WebSocket 协议和握手请求，指定路径 `/ws`。
+- **WebSocketChatServerHandler**：自定义消息处理器，用于接收和广播 WebSocket 消息。
+
+#### WebSocketChatServerHandler
+
+`WebSocketChatServerHandler` 负责消息广播和连接管理：
+
+1. **handlerAdded**：客户端连接时，将其加入 `ChannelGroup`，并向所有客户端广播连接消息。
+2. **handlerRemoved**：客户端断开时，将其从 `ChannelGroup` 移除，并广播离线消息。
+3. **channelRead**：收到客户端消息后，向所有已连接的客户端广播消息。
+
+### chat_client.html
+
+`chat_client.html` 是 WebSocket 客户端，用户可以通过浏览器与服务器建立连接并参与聊天。
+![image-20241029104108994](https://raw.githubusercontent.com/HeZephyr/NewPicGoLibrary/main/img/image-20241029104108994.png)
+
+#### 关键代码
+
+- **连接 WebSocket 服务器**：通过 JavaScript 创建 WebSocket，连接到 `ws://localhost:8080/ws`。
+
+  ```javascript
+  const socket = new WebSocket('ws://localhost:8080/ws');
+  ```
+
+- **接收和显示消息**：接收服务器广播的消息并显示到页面上。
+
+  ```javascript
+  socket.onmessage = function(event) {
+      const message = document.createElement("p");
+      message.textContent = event.data;
+      document.getElementById("chat").appendChild(message);
+  };
+  ```
+
+- **发送消息**：用户输入消息后，点击“发送”按钮或按回车键，将消息发送到服务器。
+
+  ```javascript
+  document.getElementById("sendButton").onclick = function() {
+      const input = document.getElementById("messageInput").value;
+      socket.send(input);
+  };
+  ```
+
+#### 使用说明
+
+1. 启动 WebSocketChatServer。
+2. 打开 `chat_client.html` 文件。
+3. 输入消息并点击“发送”即可参与实时聊天。
+
+---
+
+### WebSocket Chat Server 项目总结
+
+`WebSocket Chat Server` 项目展示了如何通过 Netty 构建一个实时 WebSocket 聊天系统，能够高效处理多客户端连接并实现消息广播。通过 `chat_client.html`，用户可以直接在浏览器中进行连接，体验实时聊天功能。
