@@ -5,7 +5,7 @@ Record my learning process of Java
 
 - [x] BIO
 - [x] NIO
-- [ ] Netty
+- [x] Netty
 
 ---
 
@@ -45,7 +45,14 @@ Netty is a high-performance, asynchronous event-driven framework for building sc
 - Supports high concurrency and scales well with non-blocking, asynchronous operations.
 - Commonly used for building custom protocols, web servers, and distributed applications.
 
+#### Examples:
+- **Basic**: Simple Netty server-client setup to establish a basic connection and message exchange.
+- **Echo**: Echo server that returns received messages to the client, demonstrating request-response patterns.
+- **Heartbeat**: Heartbeat mechanism using `IdleStateHandler` to detect and handle idle connections for connection stability.
+- **File Transfer**: Implements file transfer using zero-copy (`FileRegion`), allowing efficient file sending between server and client.
+- **WebSocket Chat**: WebSocket-based chat server for real-time message broadcasting among multiple clients connected to a WebSocket endpoint.
 ---
+
 
 ## Running Examples
 
