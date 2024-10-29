@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Client</title>
+    <style>
+        #chat {
+            width: 100%;
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #message {
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+<h1>WebSocket Chat Client</h1>
+<div id="chat"></div>
+<input type="text" id="message" placeholder="Type a message..." autofocus>
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    // Connect to WebSocket server
+    const ws = new WebSocket("ws://localhost:8080/ws");
+
+    ws.onopen = () => {
+        addMessage("Connected to chat server");
+    };
+
+    ws.onmessage = (event) => {
+        addMessage(event.data);
+    };
+
+    ws.onclose = () => {
+        addMessage("Disconnected from chat server");
+    };
+
+    ws.onerror = (error) => {
+        addMessage("Error: " + error.message);
+    };
+
+    function sendMessage() {
+        const messageInput = document.getElementById("message");
+        const message = messageInput.value;
+        if (message) {
+            ws.send(message);
+            messageInput.value = ""; // Clear the input field
+        }
+    }
+
+    function addMessage(message) {
+        const chat = document.getElementById("chat");
+        const messageElement = document.createElement("p");
+        messageElement.textContent = message;
+        chat.appendChild(messageElement);
+        chat.scrollTop = chat.scrollHeight; // Scroll to the latest message
+    }
+</script>
+</body>
+</html>
