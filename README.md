@@ -6,6 +6,7 @@ Record my learning process of Java
 - [x] BIO
 - [x] NIO
 - [x] Netty
+- [x] Concurrent
 
 ---
 
@@ -53,6 +54,31 @@ Netty is a high-performance, asynchronous event-driven framework for building sc
 - **WebSocket Chat**: WebSocket-based chat server for real-time message broadcasting among multiple clients connected to a WebSocket endpoint.
 ---
 
+### 4 Concurrency
+This section covers Java’s concurrency model, focusing on the tools provided by the java.util.concurrent package. It includes examples of thread creation, synchronization, atomic operations, concurrent collections, and the Fork/Join framework, along with various utilities for thread coordination and communication.
+
+#### Key Features:
+* Thread Creation: Different approaches to creating and managing threads, including implementing Runnable, extending Thread, and using thread pools.
+* synchronization and Locks: Techniques for ensuring safe access to shared resources, including synchronized blocks and reentrant locks.
+* Atomic Operations: Using atomic classes like AtomicInteger, AtomicReference, and AtomicStampedReference to perform non-blocking updates. 
+* Concurrent Collections: Collections like ConcurrentHashMap, ConcurrentLinkedQueue, CopyOnWriteArrayList, and BlockingQueue to handle concurrent access efficiently. 
+* Communication Utilities: Classes like CountDownLatch, CyclicBarrier, Semaphore, and Exchanger for managing complex thread interactions. 
+* Fork/Join Framework: Parallel processing of large tasks by dividing them into smaller subtasks, particularly useful for recursive algorithms.
+
+#### Examples:
+* Thread Creation: Demonstrates various ways to create threads, including Runnable, Callable, and using thread pools.
+* Synchronization: Example using ReentrantLock to control access to shared resources, and Condition to manage inter-thread signaling.
+* Atomic Operations: Shows the use of atomic variables to avoid synchronization, including solving the ABA problem with AtomicStampedReference.
+* Concurrent Collections: Examples of using ConcurrentHashMap and BlockingQueue to handle concurrent access.
+* Communication Utilities:
+  * CountDownLatch: Allows one or more threads to wait for a set of operations in other threads to complete.
+  * CyclicBarrier: Synchronizes threads at a common barrier point.
+  * Semaphore: Controls access to a resource pool, with examples demonstrating resource limits.
+  * Exchanger: Facilitates data exchange between two threads.
+* Fork/Join Framework:
+  * Parallel Sum Calculation: Splits an array and calculates the sum in parallel using RecursiveTask.
+  * Parallel Merge Sort: Implements merge sort using RecursiveAction to split and merge parts of an array concurrently.
+  * Directory Size Calculation: Recursively computes the size of a directory and its subdirectories using RecursiveTask.
 
 ## Running Examples
 
@@ -60,3 +86,4 @@ Each example in this project is organized into its own package and can be execut
 
 ```bash
 mvn exec:java -Dexec.mainClass="example.net.bio.BioServer"
+```
